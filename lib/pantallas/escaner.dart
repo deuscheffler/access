@@ -81,13 +81,24 @@ class _PaginaEscanerState extends State<PaginaEscaner> {
   Future<void> _simular() async {
     final evento = Almacen.i.eventoPorId(widget.eventoId);
     if (evento == null) return;
-    final pases = Almacen.i.pasesDeEvento(evento.id);
     final codigo = await showModalBottomSheet<String>(
       context: context,
       showDragHandle: true,
-      builder: (ctx) => _HojaSimulacion(pases: pases),
+      builder: (ctx) => _HojaSimulacion(evento: evento),
     );
     if (codigo != null && mounted) _procesar(codigo);
+  }
+
+  Future<void> _elegirPuerta() async {
+    final evento = Almacen.i.eventoPorId(widget.eventoId);
+    if (evento == null) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (ctx) => _HojaPuerta(evento: evento),
+    );
+    if (mounted) setState(() {});
   }
 
   @override
@@ -135,6 +146,52 @@ class _PaginaEscanerState extends State<PaginaEscaner> {
               ),
             ),
           ),
+          // Cursos que atiende esta puerta
+          Positioned(
+            left: 16,
+            right: 16,
+            top: 12,
+            child: ListenableBuilder(
+              listenable: a,
+              builder: (context, _) {
+                final puerta = a.puertaDe(widget.eventoId);
+                return Material(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(14),
+                    onTap: _elegirPuerta,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 12),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.door_front_door_outlined,
+                              color: Paleta.tinta),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              '${a.nombreCelular.isEmpty ? 'Esta puerta' : a.nombreCelular}: '
+                              '${puerta.isEmpty ? 'todos los cursos' : '${puerta.length} curso${puerta.length == 1 ? '' : 's'}'}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 15,
+                                color: Paleta.tinta,
+                              ),
+                            ),
+                          ),
+                          const Text('Cambiar',
+                              style: TextStyle(
+                                  color: Paleta.pizarra,
+                                  fontWeight: FontWeight.w500)),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
           // Contador inferior
           Positioned(
             left: 16,
@@ -143,8 +200,9 @@ class _PaginaEscanerState extends State<PaginaEscaner> {
             child: ListenableBuilder(
               listenable: a,
               builder: (context, _) {
-                final pases = a.pasesDeEvento(widget.eventoId);
-                final usados = pases.where((p) => p.usado).length;
+                final ev = a.eventoPorId(widget.eventoId);
+                final usados = ev == null ? 0 : a.usadosEn(ev);
+                final total = ev == null ? 0 : a.totalPases(ev);
                 return Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
@@ -167,7 +225,7 @@ class _PaginaEscanerState extends State<PaginaEscaner> {
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
-                          'de ${pases.length} ingresaron\n'
+                          'de $total ingresaron por este celular\n'
                           'Apunta la cámara al código QR',
                           style: const TextStyle(
                             color: Colors.white70,
@@ -279,13 +337,18 @@ class _PantallaVeredicto extends StatelessWidget {
 /// Permite probar el flujo con un solo celular, sin otra pantalla que
 /// muestre el QR.
 class _HojaSimulacion extends StatelessWidget {
-  final List<Pase> pases;
-  const _HojaSimulacion({required this.pases});
+  final Evento evento;
+  const _HojaSimulacion({required this.evento});
 
   @override
   Widget build(BuildContext context) {
     final a = Almacen.i;
-    final muestra = pases.take(60).toList();
+    final muestra = <(Estudiante, Pase)>[];
+    for (final e in a.participantes(evento).take(25)) {
+      for (final p in a.pasesDe(evento, e)) {
+        muestra.add((e, p));
+      }
+    }
     return SafeArea(
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -311,32 +374,139 @@ class _HojaSimulacion extends StatelessWidget {
                 title: const Text('Probar un QR alterado'),
                 subtitle: const Text('Un pase real con la firma modificada'),
                 onTap: () => Navigator.of(context)
-                    .pop(codificarPaseAlterado(muestra.first)),
+                    .pop(codificarPaseAlterado(muestra.first.$2)),
               ),
             ListTile(
-              leading:
-                  const Icon(Icons.help_outline, color: Paleta.pizarra),
+              leading: const Icon(Icons.help_outline, color: Paleta.pizarra),
               title: const Text('Probar un QR ajeno'),
               subtitle: const Text('Un código que no es de Omega'),
               onTap: () =>
                   Navigator.of(context).pop('https://ejemplo.com/entrada/123'),
             ),
             const Divider(),
-            for (final p in muestra)
+            for (final (e, p) in muestra)
               ListTile(
                 leading: Icon(
-                  p.usado ? Icons.check_circle : Icons.qr_code_2,
-                  color: p.usado ? Paleta.paso : Paleta.tinta,
+                  a.usoDe(p) != null ? Icons.check_circle : Icons.qr_code_2,
+                  color: a.usoDe(p) != null ? Paleta.paso : Paleta.tinta,
                 ),
-                title: Text(
-                    a.estudiantePorId(p.estudianteId)?.nombreCompleto ?? 'Pase'),
+                title: Text(e.nombre),
                 subtitle: Text(
-                  '${a.estudiantePorId(p.estudianteId)?.curso ?? ''}, '
-                  'pase ${p.numero} de ${p.total}'
-                  '${p.usado ? ', ya usado' : ''}',
+                  '${e.curso}, pase ${p.numero} de ${p.total}'
+                  '${a.usoDe(p) != null ? ', ya usado' : ''}',
                 ),
                 onTap: () => Navigator.of(context).pop(codificarPase(p)),
               ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Define qué cursos atiende la puerta de este celular. Si cada puerta
+/// recibe cursos distintos, un pase copiado no puede entrar dos veces por
+/// puertas diferentes, aunque los celulares no estén conectados entre sí.
+class _HojaPuerta extends StatefulWidget {
+  final Evento evento;
+  const _HojaPuerta({required this.evento});
+
+  @override
+  State<_HojaPuerta> createState() => _HojaPuertaState();
+}
+
+class _HojaPuertaState extends State<_HojaPuerta> {
+  late Set<String> _sel;
+  late final TextEditingController _nombre;
+
+  @override
+  void initState() {
+    super.initState();
+    _sel = {...Almacen.i.puertaDe(widget.evento.id)};
+    _nombre = TextEditingController(text: Almacen.i.nombreCelular);
+  }
+
+  @override
+  void dispose() {
+    _nombre.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final a = Almacen.i;
+    final cursos = a.cursosDeEvento(widget.evento);
+    return SafeArea(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.85,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: TextField(
+                controller: _nombre,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  labelText: 'Nombre de esta puerta o celular',
+                  hintText: 'Ej.: Puerta principal',
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 4),
+              child: Text(
+                'Cursos de esta puerta',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: Paleta.tinta,
+                ),
+              ),
+            ),
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                'Si no marcas ninguno, esta puerta recibe todos los cursos.',
+                style: TextStyle(color: Paleta.pizarra),
+              ),
+            ),
+            Flexible(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  for (final c in cursos)
+                    CheckboxListTile(
+                      value: _sel.contains(c.clave),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      title: Text(c.nombre),
+                      onChanged: (v) => setState(() {
+                        if (v == true) {
+                          _sel.add(c.clave);
+                        } else {
+                          _sel.remove(c.clave);
+                        }
+                      }),
+                    ),
+                ],
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+              child: FilledButton(
+                onPressed: () {
+                  a.definirNombreCelular(_nombre.text);
+                  a.definirPuerta(widget.evento.id, _sel);
+                  Navigator.of(context).pop();
+                },
+                child: Text(_sel.isEmpty
+                    ? 'Recibir todos los cursos'
+                    : 'Recibir ${_sel.length} curso${_sel.length == 1 ? '' : 's'}'),
+              ),
+            ),
           ],
         ),
       ),

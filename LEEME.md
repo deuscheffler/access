@@ -1,79 +1,120 @@
-# Omega Access Control: demo local
+# Omega Access Control: versión sin conexión
 
-Demo para verificar los mínimos funcionales. Todo funciona dentro del celular,
-sin servidor ni internet: los datos se guardan en un archivo del teléfono.
+App para controlar el ingreso a eventos escolares con códigos QR. No necesita
+servidor ni internet: la nómina viaja dentro de la app y todos los celulares
+generan y validan exactamente los mismos pases.
 
-## Qué incluye
+Institución: Escuela de Educación Básica «República de Italia», periodo
+2026-2027. 1647 estudiantes en 52 cursos, de Inicial 3 años a 7.º.
 
-- Crear eventos con nombre, lugar y fecha.
-- Registrar estudiantes por grado y paralelo, o cargar 180 de prueba.
-- Generar pases eligiendo grados y paralelos y cuántos pases por estudiante.
-- Ver cada pase con su QR firmado y compartirlo como imagen por WhatsApp.
-- Escanear con la cámara y recibir el veredicto a pantalla completa:
-  verde «Adelante», rojo «Alto», ámbar «Verificar».
-- Rechazar pases ya usados, de otro evento, alterados o ajenos.
-- Registro de todas las lecturas con hora y resultado.
+## Eventos precargados
 
-## Cómo obtener el APK (unos 10 minutos)
+Vienen listos en todos los celulares, con 2 pases por estudiante:
 
-No necesitas instalar Flutter ni Android Studio. GitHub compila el APK gratis.
+| Fecha | Evento | Cursos | Estudiantes | Pases |
+|---|---|---|---|---|
+| 28 oct | Inauguración de deportes nivel elemental – matutina | Inicial 3 años a 3.º, matutina | 451 | 902 |
+| 28 oct | Inauguración de deportes nivel elemental – vespertina | Inicial 3 años a 3.º, vespertina | 357 | 714 |
+| 29 oct | Inauguración de deportes nivel básico – matutina | 4.º a 7.º, matutina | 458 | 916 |
+| 29 oct | Inauguración de deportes nivel básico – vespertina | 4.º a 7.º, vespertina | 381 | 762 |
 
-1. Crea una cuenta en github.com si no tienes.
-2. Crea un repositorio nuevo, por ejemplo `omega-access-demo`. Puede ser privado.
-3. En el repositorio, elige «uploading an existing file» y arrastra **todo el
-   contenido** de esta carpeta, incluida la carpeta oculta `.github`.
-   Si tu explorador de archivos no muestra `.github`, activa «mostrar archivos
-   ocultos», o sube la carpeta con GitHub Desktop.
-4. Confirma la subida en la rama `main`.
-5. Abre la pestaña **Actions**. Verás el proceso «Compilar APK» en marcha.
-   Tarda entre 6 y 10 minutos.
-6. Cuando aparezca la marca verde, entra al proceso y descarga el archivo
-   `omega-access-demo` en la sección **Artifacts**. Es un .zip con el APK.
-7. Pasa el APK al celular, ábrelo y permite «instalar apps de origen
-   desconocido» cuando Android lo pida.
+Como sus identificadores son fijos, no hace falta pasarlos de un celular a
+otro: basta con instalar la app. Se pueden crear más eventos cuando se
+necesite.
 
-Si el proceso termina en rojo, abre el paso que falló, copia el error y
-compártelo para corregirlo.
+## Funciones principales
 
-## Guion sugerido para la demostración
+- **Enviar por grupo:** en el detalle del evento, elige uno o varios cursos
+  (por ejemplo, 5.º matutina con sus tres paralelos), escribe el WhatsApp de la
+  docente y envía un solo PDF con cada curso en hojas separadas.
+- **Agregar acceso:** para un estudiante que no está en la nómina, una
+  autoridad o un invitado. También desde los pases de un estudiante se puede
+  agregar un pase más. El nombre viaja dentro del QR, así que todas las
+  puertas lo reconocen.
+- **Informe:** por evento, en PDF (resumen por curso y detalle de ingresos) o
+  en CSV para Excel. Cada lectura guarda hora, resultado, estudiante, curso,
+  número de pase y nombre de la puerta.
+- **Nombre de la puerta:** en el escáner, toca la barra superior para nombrar
+  el celular (por ejemplo, «Puerta principal») y asignar sus cursos.
 
-1. En Eventos, toca «Cargar datos de prueba».
-2. Entra a «Inauguración deportiva» y toca «Generar pases».
-3. Marca 5.º completo y 6.º A, deja 2 pases por estudiante y genera.
-4. Abre un paralelo, elige un estudiante y muestra sus dos pases.
-   Compártelos por WhatsApp para enseñar cómo los recibiría la familia.
-5. Abre esos pases en otro celular o en la computadora y vuelve al evento.
-6. Toca «Escanear» y lee el primer pase: pantalla verde.
-7. Léelo otra vez: pantalla roja, «Pase ya utilizado», con la hora del ingreso.
-8. Con el botón de la mano (simular lectura) prueba un QR alterado y uno ajeno.
-9. Vuelve y muestra el contador del evento y la pestaña Registro.
+## Datos de la empresa
 
-Con un solo celular, el botón de simular lectura reemplaza al segundo
-dispositivo.
+Edita `lib/empresa.dart` para completar RUC, dirección, teléfono y correo de
+Omega Telecom. Los campos vacíos no se muestran en la app.
 
-## Límites de esta demo (se resuelven con el servidor)
+La política de privacidad y los términos y condiciones están en
+`lib/pantallas/acerca.dart`. Son un borrador: conviene que los revise la
+escuela y un asesor legal antes de la versión definitiva.
 
-- Cada celular tiene sus propios datos: aún no se sincronizan entre teléfonos.
-- La clave de firma está dentro de la app. En producción el servidor firma con
-  Ed25519 y la app solo guarda la clave pública.
-- El nombre de la institución y el logo son fijos.
-- No hay usuarios, operadores ni puertas.
-- No hay importación desde Excel, PDF por paralelo ni enlace para presidentes.
+## Cómo funciona entre varios celulares
+
+1. **Un celular crea el evento** (nombre, lugar, fecha) y elige los cursos que
+   participan y cuántos pases recibe cada estudiante.
+2. **Los demás celulares lo agregan** escaneando el código que muestra
+   «Pasar este evento a otro celular». Así los 6 o más celulares quedan con el
+   mismo evento sin internet. Si se cambian los cursos, se repite este paso.
+3. **Los pases se comparten por curso:** en el detalle del evento, el botón PDF
+   de cada curso crea un archivo con todos sus pases (6 por hoja, con líneas de
+   corte) para enviarlo al presidente por WhatsApp o imprimirlo. También se
+   puede compartir los pases de un solo estudiante como imágenes.
+4. **En la puerta,** cada celular escanea y muestra el veredicto en pantalla
+   completa: verde «Adelante», rojo «Alto», ámbar «Verificar».
+
+### Importante: puertas por curso
+
+Como los celulares no se comunican entre sí, cada uno solo sabe qué pases
+pasaron por él. Si alguien copia un pase y lo presenta en dos puertas
+distintas, ambas lo aceptarían. Para evitarlo, en el escáner toca
+«Esta puerta recibe…» y asigna a cada celular los cursos que le corresponden
+(por ejemplo, puerta 1: 1.º a 3.º matutina). Un pase de otro curso aparece en
+ámbar con el aviso «Corresponde a otra puerta».
+
+## Cómo compilar el APK
+
+1. En GitHub crea un repositorio **privado** (contiene nombres de estudiantes
+   menores de edad; no debe ser público).
+2. Sube todo el contenido de esta carpeta, incluida la carpeta oculta `.github`.
+3. En la pestaña **Actions**, espera a que termine «Compilar APK» (6 a 10 min).
+4. Descarga `omega-access-demo` en **Artifacts** e instala el APK.
+
+Si el proceso termina en rojo, copia el error del paso que falló y compártelo.
+
+## Actualizar la nómina
+
+Si cambian las listas (matrículas nuevas, retiros), pon todos los Excel en una
+carpeta y ejecuta:
+
+```
+pip install openpyxl
+python tool/convertir_nominas.py carpeta_con_los_excel
+```
+
+Esto regenera `assets/nomina.json`. Luego sube ese archivo al repositorio para
+compilar un APK nuevo e instálalo en todos los celulares. La clave de firma se
+conserva, así que los pases ya entregados siguen siendo válidos.
+
+Nombre esperado de los archivos: `1RO_A_MAT.xlsx`, `7MO_C_VESP.xlsx`,
+`INICIAL_3_AÑOS_A_MAT.xlsx`, etc.
+
+## Privacidad
+
+- La app solo lleva nombre, grado, paralelo y jornada. La cédula se usa una
+  sola vez para crear un identificador y no se guarda; el correo no se usa.
+- El APK contiene la nómina: instálalo solo en los celulares del personal y no
+  lo publiques.
+- La clave de firma está dentro de la app. Es suficiente para un evento
+  escolar; con servidor, la firma se haría con una clave que nunca sale de él.
 
 ## Estructura
 
 ```
+assets/nomina.json     nómina y clave de firma (generado)
 lib/
-  main.dart            arranque y navegación
-  modelos.dart         evento, estudiante, pase, escaneo
-  almacen.dart         datos locales, generación de pases y validación
-  codigo_qr.dart       firma y lectura del código
-  tema.dart            paleta, tipografía y logo
-  pantallas/           eventos, estudiantes, pases, escáner, registro
-branding/              ícono de la app
-tool/                  ajustes de Android usados al compilar
+  almacen.dart         nómina, eventos, pases usados y validación
+  codigo_qr.dart       firma de pases y código para pasar eventos
+  pantallas/           eventos, cursos, escáner, pases, PDF, nómina, registro
+tool/
+  convertir_nominas.py Excel -> assets/nomina.json
+  configurar_android.sh ajustes usados al compilar
 .github/workflows/     compilación automática del APK
 ```
-
-Tipografía: Barlow y Barlow Condensed (licencia SIL Open Font, ver
-`assets/fonts/OFL.txt`).

@@ -2,15 +2,16 @@ import 'package:flutter/material.dart';
 
 import 'modelos.dart';
 
-/// Paleta: tinta andina como base institucional; los tres colores de
-/// veredicto son fijos para todos los clientes porque el operador debe
-/// reconocerlos de un vistazo, incluso a pleno sol.
+/// Paleta tomada del logo de Omega Access: azul de marca y fondo celeste
+/// muy claro. Los tres colores de veredicto son fijos para todos los
+/// clientes porque el operador debe reconocerlos de un vistazo.
 class Paleta {
-  static const tinta = Color(0xFF14284B);
-  static const tintaSuave = Color(0xFF243B63);
-  static const niebla = Color(0xFFEEF2F5);
-  static const pizarra = Color(0xFF4A5868);
-  static const linea = Color(0xFFD5DCE3);
+  static const tinta = Color(0xFF0E3E80);
+  static const tintaOscura = Color(0xFF0A2E61);
+  static const niebla = Color(0xFFEFF5FB);
+  static const celeste = Color(0xFFE3EEF9);
+  static const pizarra = Color(0xFF4A5A6E);
+  static const linea = Color(0xFFD3DEEA);
   static const paso = Color(0xFF109B4E);
   static const alto = Color(0xFFD12F2F);
   static const atencion = Color(0xFFE39B12);
@@ -89,56 +90,61 @@ ThemeData temaOmega() {
   );
 }
 
-/// Logo: la omega funciona como un arco de acceso y la línea verde es el
-/// umbral. Cada cliente podrá reemplazarlo por su propio logo.
+/// Ícono de Omega Access (el mismo del menú de aplicaciones).
 class LogoOmega extends StatelessWidget {
   final double tamano;
-  final bool sobreOscuro;
+  final bool sobreOscuro; // se conserva por compatibilidad
 
   const LogoOmega({super.key, this.tamano = 32, this.sobreOscuro = false});
 
   @override
   Widget build(BuildContext context) {
-    final fondo = sobreOscuro ? Colors.white : Paleta.tinta;
-    final trazo = sobreOscuro ? Paleta.tinta : Colors.white;
-    return Container(
-      width: tamano,
-      height: tamano,
-      decoration: BoxDecoration(
-        color: fondo,
-        borderRadius: BorderRadius.circular(tamano * 0.22),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned(
-            top: tamano * 0.12,
-            child: Text(
-              'Ω',
-              style: TextStyle(
-                fontFamily: 'Barlow',
-                fontWeight: FontWeight.w700,
-                fontSize: tamano * 0.6,
-                height: 1.0,
-                color: trazo,
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: tamano * 0.14,
-            child: Container(
-              width: tamano * 0.4,
-              height: tamano * 0.06,
-              decoration: BoxDecoration(
-                color: Paleta.paso,
-                borderRadius: BorderRadius.circular(tamano * 0.03),
-              ),
-            ),
-          ),
-        ],
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(tamano * 0.22),
+      child: Image.asset(
+        'assets/img/icono.png',
+        width: tamano,
+        height: tamano,
+        fit: BoxFit.cover,
       ),
     );
   }
+}
+
+/// Escudo de la institución.
+class EscudoEscuela extends StatelessWidget {
+  final double tamano;
+  const EscudoEscuela({super.key, this.tamano = 40});
+
+  @override
+  Widget build(BuildContext context) => Image.asset(
+        'assets/img/escuela.png',
+        width: tamano,
+        height: tamano,
+        fit: BoxFit.contain,
+      );
+}
+
+/// Escudo de la institución como marca de agua de fondo.
+class MarcaAguaEscuela extends StatelessWidget {
+  final double tamano;
+  final double opacidad;
+  const MarcaAguaEscuela({super.key, this.tamano = 320, this.opacidad = 0.07});
+
+  @override
+  Widget build(BuildContext context) => IgnorePointer(
+        child: Center(
+          child: Opacity(
+            opacity: opacidad,
+            child: Image.asset(
+              'assets/img/escuela.png',
+              width: tamano,
+              height: tamano,
+              fit: BoxFit.contain,
+            ),
+          ),
+        ),
+      );
 }
 
 /// Estado vacío: dice qué hacer, no cómo sentirse.

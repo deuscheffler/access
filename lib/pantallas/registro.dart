@@ -4,6 +4,7 @@ import '../almacen.dart';
 import '../formato.dart';
 import '../modelos.dart';
 import '../tema.dart';
+import 'informe.dart';
 
 class PaginaRegistro extends StatelessWidget {
   const PaginaRegistro({super.key});
@@ -12,7 +13,16 @@ class PaginaRegistro extends StatelessWidget {
   Widget build(BuildContext context) {
     final a = Almacen.i;
     return Scaffold(
-      appBar: AppBar(title: const Text('Registro de accesos')),
+      appBar: AppBar(
+        title: const Text('Registro de accesos'),
+        actions: [
+          IconButton(
+            tooltip: 'Informe de un evento',
+            icon: const Icon(Icons.summarize_outlined),
+            onPressed: () => _elegirEvento(context),
+          ),
+        ],
+      ),
       body: ListenableBuilder(
         listenable: a,
         builder: (context, _) {
@@ -97,7 +107,9 @@ class PaginaRegistro extends StatelessWidget {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Text(
-                                    ev.nombre,
+                                    e.puerta.isEmpty
+                                        ? ev.nombre
+                                        : '${ev.nombre}, ${e.puerta}',
                                     style: const TextStyle(
                                       fontSize: 13,
                                       color: Paleta.pizarra,
@@ -117,5 +129,42 @@ class PaginaRegistro extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _elegirEvento(BuildContext context) async {
+    final a = Almacen.i;
+    if (a.eventos.isEmpty) return;
+    final elegido = await showModalBottomSheet<Evento>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: ListView(
+          shrinkWrap: true,
+          children: [
+            const Padding(
+              padding: EdgeInsets.fromLTRB(20, 0, 20, 8),
+              child: Text(
+                'Informe de qué evento',
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w700,
+                  color: Paleta.tinta,
+                ),
+              ),
+            ),
+            for (final ev in a.eventos)
+              ListTile(
+                title: Text(ev.nombre),
+                subtitle: Text(
+                    '${a.escaneos.where((e) => e.eventoId == ev.id).length} lecturas'),
+                onTap: () => Navigator.of(ctx).pop(ev),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (elegido != null && context.mounted) {
+      await mostrarOpcionesInforme(context, elegido);
+    }
   }
 }

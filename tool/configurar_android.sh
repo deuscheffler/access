@@ -12,17 +12,18 @@ if ! grep -q "android.permission.CAMERA" "$MANIFEST"; then
   sed -i "s#<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">#&\n    <uses-permission android:name=\"android.permission.CAMERA\"/>#" "$MANIFEST"
 fi
 
-# Kotlin 1.9 (lo requieren versiones recientes de los complementos)
-for f in android/settings.gradle android/settings.gradle.kts; do
-  if [ -f "$f" ]; then
-    sed -i -E 's/(org\.jetbrains\.kotlin\.android"\)? version )"[0-9.]+"/\1"1.9.24"/' "$f"
+# Permitir abrir el navegador y WhatsApp (Android 11 o superior)
+if ! grep -q "android.intent.action.VIEW" "$MANIFEST"; then
+  BLOQUE='        <intent>\n            <action android:name="android.intent.action.VIEW"/>\n            <data android:scheme="https"/>\n        </intent>'
+  if grep -q "<queries>" "$MANIFEST"; then
+    sed -i "s#<queries>#<queries>\n$BLOQUE#" "$MANIFEST"
+  else
+    sed -i "s#</manifest>#    <queries>\n$BLOQUE\n    </queries>\n</manifest>#" "$MANIFEST"
   fi
-done
+fi
 
 # Ícono de Omega Access Control
 cp -r branding/android/res/. android/app/src/main/res/
 
 echo "--- AndroidManifest.xml ---"
-head -n 12 "$MANIFEST"
-echo "--- settings.gradle ---"
-grep -h "kotlin" android/settings.gradle* || true
+cat "$MANIFEST"

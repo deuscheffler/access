@@ -1,7 +1,7 @@
 name: omega_access
-description: Demo de Omega Access Control. Todo funciona localmente en el celular.
+description: Omega Access Control, versión sin conexión con nómina incluida.
 publish_to: 'none'
-version: 0.1.0+1
+version: 1.0.0+3
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -16,9 +16,15 @@ dependencies:
   crypto: ^3.0.3
   path_provider: ^2.1.4
   share_plus: ^10.1.0
+  pdf: ^3.11.1
+  url_launcher: ^6.3.1
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/nomina.json
+    - assets/img/
+    - assets/fonts/
   fonts:
     - family: Barlow
       fonts:
