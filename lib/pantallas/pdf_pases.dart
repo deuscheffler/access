@@ -110,9 +110,10 @@ Future<void> compartirPdfDeCurso(Evento ev, Curso curso) async {
 }
 
 String mensajePases(Evento ev, String grupo) =>
-    'Pases de $grupo para «${ev.nombre}», ${fechaLarga(ev.fecha)}. '
-    'Cada estudiante tiene ${ev.pasesPorPersona} pases y cada pase permite un '
-    'ingreso. Por favor, reenvíe a cada familia sus pases o imprímalos.';
+    'PDF para imprimir los pases de $grupo para «${ev.nombre}», '
+    '${fechaLarga(ev.fecha)}. Contiene los pases de todo el grupo: por '
+    'seguridad, no lo reenvíes a las familias. Para enviarlos por WhatsApp '
+    'usa las imágenes individuales.';
 
 Future<File> _guardar(pw.Document doc, String nombre) async {
   final dir = await getTemporaryDirectory();

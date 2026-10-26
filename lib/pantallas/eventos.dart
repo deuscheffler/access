@@ -7,6 +7,7 @@ import '../tema.dart';
 import 'accesos_extra.dart';
 import 'compartir_evento.dart';
 import 'envio_grupo.dart';
+import 'imagenes_pases.dart';
 import 'informe.dart';
 import 'escaner.dart';
 import 'pases.dart';
@@ -561,7 +562,7 @@ class DetalleEvento extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
                   child: Text(
                     '${cursos.length} cursos, ${ev.pasesPorPersona} pases por '
-                    'estudiante. Comparte el PDF de cada curso con su presidente.',
+                    'estudiante. Con el botón de compartir de cada curso envías una imagen por pase.',
                     style: const TextStyle(fontSize: 14, color: Paleta.pizarra),
                   ),
                 ),
@@ -642,10 +643,15 @@ class _BloqueCursoState extends State<_BloqueCurso> {
                   child: CircularProgressIndicator(strokeWidth: 2.5),
                 )
               : IconButton(
-                  tooltip: 'Compartir PDF del curso',
-                  icon: const Icon(Icons.picture_as_pdf_outlined,
-                      color: Paleta.tinta),
-                  onPressed: _compartirPdf,
+                  tooltip: 'Compartir pases del curso',
+                  icon: const Icon(Icons.ios_share, color: Paleta.tinta),
+                  onPressed: () => mostrarOpcionesCompartir(
+                    context,
+                    ev,
+                    [c],
+                    c.nombre,
+                    alEnviarPdf: _compartirPdf,
+                  ),
                 ),
           children: [
             for (final e in lista)

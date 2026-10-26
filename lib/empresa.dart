@@ -11,7 +11,7 @@ class Empresa {
   static const correo = '';
 
   static const producto = 'Omega Access Control';
-  static const version = '1.0.0';
+  static const version = '1.1.0';
 }
 
 /// Institución que usa esta compilación de la app.

@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../almacen.dart';
 import '../modelos.dart';
 import '../tema.dart';
+import 'imagenes_pases.dart';
 import 'pdf_pases.dart';
 
 /// Elige uno o varios cursos (por ejemplo, todo 5.º matutina), arma un solo
@@ -78,7 +79,7 @@ class _PaginaEnvioGrupoState extends State<PaginaEnvioGrupo> {
     _recordarContacto();
     final saludo =
         _nombre.text.trim().isEmpty ? 'Hola' : 'Hola, ${_nombre.text.trim()}';
-    final texto = '$saludo. Le envío a continuación el PDF con los pases de '
+    final texto = '$saludo. Le envío a continuación las imágenes con los pases de '
         '${_nombreGrupo(cursos)} para «${ev.nombre}».';
     final ok = await launchUrl(
       Uri.parse('https://wa.me/$numero?text=${Uri.encodeComponent(texto)}'),
@@ -87,15 +88,21 @@ class _PaginaEnvioGrupoState extends State<PaginaEnvioGrupo> {
     if (!ok) _aviso('No se pudo abrir WhatsApp.');
   }
 
+  Future<void> _enviarImagenes(Evento ev, List<Curso> cursos) async {
+    _recordarContacto();
+    await enviarImagenes(context, ev, cursos, _nombreGrupo(cursos));
+  }
+
   Future<void> _enviarPdf(Evento ev, List<Curso> cursos) async {
     setState(() => _trabajando = true);
     try {
-      _recordarContacto();
       final grupo = _nombreGrupo(cursos);
       final archivo = await crearPdfDeCursos(ev, cursos, titulo: grupo);
       await Share.shareXFiles(
         [XFile(archivo.path, mimeType: 'application/pdf')],
-        text: mensajePases(ev, grupo),
+        text: 'PDF para imprimir los pases de $grupo para «${ev.nombre}». '
+            'Por seguridad, no lo reenvíes a las familias: contiene los pases '
+            'de todo el grupo.',
       );
     } catch (e) {
       _aviso('No se pudo crear el PDF: $e');
@@ -144,8 +151,9 @@ class _PaginaEnvioGrupoState extends State<PaginaEnvioGrupo> {
           ),
           const SizedBox(height: 4),
           const Text(
-            'Elige los cursos del grupo. Se arma un solo PDF, con cada curso '
-            'en hojas separadas, para enviarlo a la docente o al presidente.',
+            'Elige los cursos del grupo. La docente recibe una imagen por pase, '
+            'con el nombre del estudiante, y reenvía a cada familia solo las '
+            'suyas. Así nadie recibe los pases de otros estudiantes.',
             style: TextStyle(color: Paleta.pizarra, height: 1.35),
           ),
           for (final j in arbol.entries) ...[
@@ -248,9 +256,9 @@ class _PaginaEnvioGrupoState extends State<PaginaEnvioGrupo> {
           ),
           const SizedBox(height: 10),
           const Text(
-            'WhatsApp no permite que otra app adjunte un archivo directamente a '
+            'WhatsApp no permite que otra app adjunte archivos directamente a '
             'un número. Por eso son dos pasos: abre el chat con la docente y '
-            'luego envía el PDF eligiendo ese chat en WhatsApp.',
+            'luego envía las imágenes eligiendo ese chat en WhatsApp.',
             style: TextStyle(fontSize: 13, height: 1.35, color: Paleta.pizarra),
           ),
         ],
@@ -289,21 +297,33 @@ class _PaginaEnvioGrupoState extends State<PaginaEnvioGrupo> {
                     child: FilledButton.icon(
                       style:
                           FilledButton.styleFrom(backgroundColor: Paleta.paso),
-                      onPressed: elegidos.isEmpty || _trabajando
+                      onPressed: elegidos.isEmpty
                           ? null
-                          : () => _enviarPdf(ev, elegidos),
-                      icon: _trabajando
-                          ? const SizedBox(
-                              width: 18,
-                              height: 18,
-                              child: CircularProgressIndicator(
-                                  strokeWidth: 2, color: Colors.white),
-                            )
-                          : const Icon(Icons.picture_as_pdf_outlined),
-                      label: Text(_trabajando ? 'Creando' : '2. Enviar PDF'),
+                          : () => _enviarImagenes(ev, elegidos),
+                      icon: const Icon(Icons.photo_library_outlined),
+                      label: const Text('2. Enviar imágenes'),
                     ),
                   ),
                 ],
+              ),
+              TextButton.icon(
+                onPressed: elegidos.isEmpty || _trabajando
+                    ? null
+                    : () => mostrarOpcionesCompartir(
+                          context,
+                          ev,
+                          elegidos,
+                          _nombreGrupo(elegidos),
+                          alEnviarPdf: () => _enviarPdf(ev, elegidos),
+                        ),
+                icon: _trabajando
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.more_horiz),
+                label: const Text('Otras opciones: ZIP o PDF para imprimir'),
               ),
             ],
           ),

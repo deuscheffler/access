@@ -26,7 +26,11 @@ necesite.
 
 - **Enviar por grupo:** en el detalle del evento, elige uno o varios cursos
   (por ejemplo, 5.º matutina con sus tres paralelos), escribe el WhatsApp de la
-  docente y envía un solo PDF con cada curso en hojas separadas.
+  docente y envía **una imagen por pase**, con el nombre del estudiante, para
+  que ella reenvíe a cada familia solo las suyas. WhatsApp acepta hasta 100
+  imágenes por envío; si el grupo tiene más, la app los separa por paralelo.
+  También se pueden descargar todas en un ZIP, o sacar un PDF solo para
+  imprimir (no debe enviarse a las familias porque contiene todo el grupo).
 - **Agregar acceso:** para un estudiante que no está en la nómina, una
   autoridad o un invitado. También desde los pases de un estudiante se puede
   agregar un pase más. El nombre viaja dentro del QR, así que todas las
