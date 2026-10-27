@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import 'autorizar.dart';
+
 import '../almacen.dart';
 import '../codigo_qr.dart';
 import '../modelos.dart';
@@ -71,6 +73,18 @@ class _PaginaEscanerState extends State<PaginaEscaner> {
     );
   }
 
+  void _reingreso() {
+    final evento = Almacen.i.eventoPorId(widget.eventoId);
+    final previo = _resultado;
+    if (evento == null || previo == null || previo.clavePase == null) return;
+    final r = Almacen.i.autorizarReingreso(evento, previo);
+    HapticFeedback.mediumImpact();
+    setState(() => _resultado = r);
+    _temporizador?.cancel();
+    _temporizador =
+        Timer(const Duration(milliseconds: 1800), _cerrarResultado);
+  }
+
   void _cerrarResultado() {
     _temporizador?.cancel();
     if (!mounted) return;
@@ -119,6 +133,15 @@ class _PaginaEscanerState extends State<PaginaEscaner> {
               _camara.toggleTorch();
               setState(() => _linterna = !_linterna);
             },
+          ),
+          IconButton(
+            tooltip: 'Autorizar sin QR',
+            icon: const Icon(Icons.person_search_outlined),
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => PaginaAutorizar(eventoId: widget.eventoId),
+              ),
+            ),
           ),
           IconButton(
             tooltip: 'Simular lectura',
@@ -245,6 +268,10 @@ class _PaginaEscanerState extends State<PaginaEscaner> {
               child: _PantallaVeredicto(
                 escaneo: _resultado!,
                 alTocar: _cerrarResultado,
+                alReingreso: _resultado!.titulo == 'Pase ya utilizado' &&
+                        _resultado!.clavePase != null
+                    ? _reingreso
+                    : null,
               ),
             ),
         ],
@@ -258,8 +285,13 @@ class _PaginaEscanerState extends State<PaginaEscaner> {
 class _PantallaVeredicto extends StatelessWidget {
   final Escaneo escaneo;
   final VoidCallback alTocar;
+  final VoidCallback? alReingreso;
 
-  const _PantallaVeredicto({required this.escaneo, required this.alTocar});
+  const _PantallaVeredicto({
+    required this.escaneo,
+    required this.alTocar,
+    this.alReingreso,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -268,11 +300,13 @@ class _PantallaVeredicto extends StatelessWidget {
       Veredicto.valido => 'Adelante',
       Veredicto.rechazado => 'Alto',
       Veredicto.advertencia => 'Verificar',
+      Veredicto.habilitado => 'Habilitado',
     };
     final icono = switch (escaneo.veredicto) {
       Veredicto.valido => Icons.check_rounded,
       Veredicto.rechazado => Icons.close_rounded,
       Veredicto.advertencia => Icons.priority_high_rounded,
+      Veredicto.habilitado => Icons.replay_rounded,
     };
 
     return GestureDetector(
@@ -286,9 +320,9 @@ class _PantallaVeredicto extends StatelessWidget {
             children: [
               Icon(icono, color: Colors.white, size: 96),
               const Spacer(),
-              Text(
+              _UnaLinea(
                 palabra,
-                style: const TextStyle(
+                const TextStyle(
                   fontFamily: 'BarlowCondensed',
                   fontWeight: FontWeight.w800,
                   fontSize: 96,
@@ -297,9 +331,9 @@ class _PantallaVeredicto extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
+              _UnaLinea(
                 escaneo.titulo,
-                style: const TextStyle(
+                const TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 26,
                   color: Colors.white,
@@ -307,9 +341,9 @@ class _PantallaVeredicto extends StatelessWidget {
               ),
               if (escaneo.persona != null) ...[
                 const SizedBox(height: 16),
-                Text(
+                _UnaLinea(
                   escaneo.persona!,
-                  style: const TextStyle(
+                  const TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 22,
                     color: Colors.white,
@@ -319,16 +353,61 @@ class _PantallaVeredicto extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 escaneo.detalle,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 19, color: Colors.white),
               ),
               const Spacer(),
-              const Text(
+              if (alReingreso != null) ...[
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      foregroundColor: Paleta.alto,
+                      minimumSize: const Size(64, 56),
+                    ),
+                    onPressed: alReingreso,
+                    icon: const Icon(Icons.login),
+                    label: const FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Salió y vuelve: permitir reingreso',
+                        maxLines: 1,
+                        softWrap: false,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              const _UnaLinea(
                 'Toca la pantalla para seguir escaneando',
-                style: TextStyle(fontSize: 15, color: Colors.white70),
+                TextStyle(fontSize: 15, color: Colors.white70),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// Texto que siempre ocupa una sola línea: si no cabe en el ancho del
+/// celular, se reduce de tamaño en lugar de pasar a una segunda línea.
+class _UnaLinea extends StatelessWidget {
+  final String texto;
+  final TextStyle estilo;
+  const _UnaLinea(this.texto, this.estilo);
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: Alignment.centerLeft,
+        child: Text(texto, maxLines: 1, softWrap: false, style: estilo),
       ),
     );
   }

@@ -5,7 +5,9 @@ import '../formato.dart';
 import '../modelos.dart';
 import '../tema.dart';
 import 'accesos_extra.dart';
+import 'autorizar.dart';
 import 'compartir_evento.dart';
+import 'envio_docentes.dart';
 import 'envio_grupo.dart';
 import 'imagenes_pases.dart';
 import 'informe.dart';
@@ -470,42 +472,80 @@ class DetalleEvento extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                child: Row(
+                child: Column(
                   children: [
-                    Expanded(
-                      child: _Accion(
-                        icono: Icons.forward_to_inbox_outlined,
-                        texto: 'Enviar por grupo',
-                        alTocar: cursos.isEmpty
-                            ? null
-                            : () => Navigator.of(context).push(
-                                  MaterialPageRoute<void>(
-                                    builder: (_) =>
-                                        PaginaEnvioGrupo(eventoId: ev.id),
-                                  ),
-                                ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _Accion(
-                        icono: Icons.person_add_alt,
-                        texto: 'Agregar acceso',
-                        alTocar: () => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) =>
-                                FormularioAccesoExtra(eventoId: ev.id),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _Accion(
+                            icono: Icons.send_to_mobile_outlined,
+                            texto: 'Enviar a docentes',
+                            alTocar: cursos.isEmpty
+                                ? null
+                                : () => Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (_) => PaginaEnvioDocentes(
+                                            eventoId: ev.id),
+                                      ),
+                                    ),
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _Accion(
+                            icono: Icons.forward_to_inbox_outlined,
+                            texto: 'Enviar por grupo',
+                            alTocar: cursos.isEmpty
+                                ? null
+                                : () => Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (_) =>
+                                            PaginaEnvioGrupo(eventoId: ev.id),
+                                      ),
+                                    ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _Accion(
+                            icono: Icons.summarize_outlined,
+                            texto: 'Informe',
+                            alTocar: () => mostrarOpcionesInforme(context, ev),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: _Accion(
-                        icono: Icons.summarize_outlined,
-                        texto: 'Informe',
-                        alTocar: () => mostrarOpcionesInforme(context, ev),
-                      ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _Accion(
+                            icono: Icons.person_search_outlined,
+                            texto: 'Autorizar sin QR',
+                            alTocar: cursos.isEmpty
+                                ? null
+                                : () => Navigator.of(context).push(
+                                      MaterialPageRoute<void>(
+                                        builder: (_) =>
+                                            PaginaAutorizar(eventoId: ev.id),
+                                      ),
+                                    ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _Accion(
+                            icono: Icons.person_add_alt,
+                            texto: 'Agregar acceso',
+                            alTocar: () => Navigator.of(context).push(
+                              MaterialPageRoute<void>(
+                                builder: (_) =>
+                                    FormularioAccesoExtra(eventoId: ev.id),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),

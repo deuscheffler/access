@@ -20,6 +20,7 @@ class Paleta {
         Veredicto.valido => paso,
         Veredicto.rechazado => alto,
         Veredicto.advertencia => atencion,
+        Veredicto.habilitado => tinta,
       };
 }
 

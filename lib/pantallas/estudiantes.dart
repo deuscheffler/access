@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../almacen.dart';
+import '../formato.dart';
 import '../modelos.dart';
 import '../tema.dart';
 
@@ -23,16 +24,7 @@ class _PaginaEstudiantesState extends State<PaginaEstudiantes> {
     super.dispose();
   }
 
-  static String _normalizar(String s) {
-    const de = 'áéíóúüñÁÉÍÓÚÜÑ';
-    const a = 'aeiouunAEIOUUN';
-    final b = StringBuffer();
-    for (final ch in s.split('')) {
-      final i = de.indexOf(ch);
-      b.write(i >= 0 ? a[i] : ch);
-    }
-    return b.toString().toLowerCase();
-  }
+  static String _normalizar(String s) => normalizar(s);
 
   @override
   Widget build(BuildContext context) {

@@ -1,0 +1,217 @@
+{
+ "escuela": {
+  "direccion": "Pasaje Quilago S/N",
+  "telefono": "2475296",
+  "correo": "17h01359@gmail.com"
+ },
+ "docentes": {
+  "-2AM": {
+   "nombre": "Reyes Ricaurte Mirian Cecilia",
+   "celular": "0987143425"
+  },
+  "-2BM": {
+   "nombre": "Tobar Alvarado Gisela Karina",
+   "celular": "0983490364"
+  },
+  "-2CM": {
+   "nombre": "Leon Maldonado Catherine Priscila",
+   "celular": "0980178404"
+  },
+  "-1AM": {
+   "nombre": "Morillo Cisneros Silvia Maribel",
+   "celular": "0999895890"
+  },
+  "-1BM": {
+   "nombre": "Alvarez Landeta Maria Isabel",
+   "celular": "0987531245"
+  },
+  "-1CM": {
+   "nombre": "Jara Araujo Estefania Patricia",
+   "celular": "0984466462"
+  },
+  "1AM": {
+   "nombre": "Guerrero Rodriguez Veronica del Pilar",
+   "celular": "0984376533"
+  },
+  "1BM": {
+   "nombre": "Villarreal Armijos Liliana Elizabeth",
+   "celular": "0998181640"
+  },
+  "1CM": {
+   "nombre": "Torres Luna Karla Pamela",
+   "celular": "0995434363"
+  },
+  "2AM": {
+   "nombre": "Alcaras Panchi Noemi Irene",
+   "celular": "0999739903"
+  },
+  "2BM": {
+   "nombre": "Andrade Garcia Maria Stephanie",
+   "celular": "0995566386"
+  },
+  "2CM": {
+   "nombre": "Camargo Fuentes Karol Lisbeth",
+   "celular": "0987459367"
+  },
+  "3AM": {
+   "nombre": "Ortiz Calderon Andrea Fernanda",
+   "celular": "0983897059"
+  },
+  "3BM": {
+   "nombre": "Aleman Marmol Maria Isabel",
+   "celular": "0984585187"
+  },
+  "3CM": {
+   "nombre": "Cardenas Perez Sofia Alejandra",
+   "celular": "0983930507"
+  },
+  "4AM": {
+   "nombre": "Jarrin Valenzuela Yolanda Edith",
+   "celular": "0992590225"
+  },
+  "4BM": {
+   "nombre": "Gavilanes Endara Norma Maria",
+   "celular": "0999850541"
+  },
+  "4CM": {
+   "nombre": "Trujillo Zapata Gabriela Tatiana",
+   "celular": "0998945406"
+  },
+  "5AM": {
+   "nombre": "Alvarez Vasquez Blanca Filomena",
+   "celular": "0998647472"
+  },
+  "5BM": {
+   "nombre": "Ribadeneira Ribadeneira Andrea Roxana",
+   "celular": "0992520212"
+  },
+  "5CM": {
+   "nombre": "Bermeo Villacres Claudia Rebeca",
+   "celular": "0998912474"
+  },
+  "6AM": {
+   "nombre": "Molina Germania Esther",
+   "celular": "0987926579"
+  },
+  "6BM": {
+   "nombre": "Cruz Bailon Laura Estefania",
+   "celular": "0998127792"
+  },
+  "6CM": {
+   "nombre": "Sanafria Aguirre Graciela Alexandra",
+   "celular": "0995802337"
+  },
+  "7AM": {
+   "nombre": "Rojas Erira Ana Maria",
+   "celular": "0987707536"
+  },
+  "7BM": {
+   "nombre": "Taco Quishpe Gloria Leticia",
+   "celular": "0991634980"
+  },
+  "7CM": {
+   "nombre": "Jaramillo Jimenez Rosa Maria",
+   "celular": "0992750996"
+  },
+  "-2AV": {
+   "nombre": "Bolaños Jara Joselyn Lizeth",
+   "celular": "0984179595"
+  },
+  "-2BV": {
+   "nombre": "Lopez de la Vega Nelly Alejandra",
+   "celular": "0987128177"
+  },
+  "-1AV": {
+   "nombre": "Almeida Merino Gabriela Carolina",
+   "celular": "0964042452"
+  },
+  "-1BV": {
+   "nombre": "Chicaiza Sigcha Alicia",
+   "celular": "0984222020"
+  },
+  "-1CV": {
+   "nombre": "Ojeda Endara Silvana del Rocio",
+   "celular": "0992339410"
+  },
+  "1AV": {
+   "nombre": "Esparza Grijalva Mayra Karina",
+   "celular": "0978646207"
+  },
+  "1BV": {
+   "nombre": "Loza Rivera Erika Valeria",
+   "celular": "0986116770"
+  },
+  "2AV": {
+   "nombre": "Caizatoa Bahamonde Irene",
+   "celular": "0983190278"
+  },
+  "2BV": {
+   "nombre": "Oña Guamani Rosa Ana",
+   "celular": "0998292221"
+  },
+  "2CV": {
+   "nombre": "Garces Gavilanes Norma Alexandra",
+   "celular": "0989437025"
+  },
+  "3AV": {
+   "nombre": "Nuñez Hurtado Viviana Tatiana",
+   "celular": "0984440986"
+  },
+  "3BV": {
+   "nombre": "Huibla Ogoña Marieta Marisol",
+   "celular": "0980081521"
+  },
+  "3CV": {
+   "nombre": "Lopez Zapata Veronica Alexandra",
+   "celular": "0982438433"
+  },
+  "4AV": {
+   "nombre": "Merchan Jungal Carlos Geovany",
+   "celular": "0963624663"
+  },
+  "4BV": {
+   "nombre": "Salazar Garrido Aurelio Ricardo",
+   "celular": "0984595406"
+  },
+  "4CV": {
+   "nombre": "Ulcuango Ashqui Maria Transito",
+   "celular": "0996707898"
+  },
+  "5AV": {
+   "nombre": "Flores Lopez Monica Lorena",
+   "celular": "0998731262"
+  },
+  "5BV": {
+   "nombre": "Tipan Pillajo Elvida Narcisa",
+   "celular": "0998620969"
+  },
+  "5CV": {
+   "nombre": "Altamirano Calvopiña Jessica Elizabeth",
+   "celular": "0988552300"
+  },
+  "6AV": {
+   "nombre": "Fuel Zurita Melina Andrea",
+   "celular": "0984964162"
+  },
+  "6BV": {
+   "nombre": "Yupangui Caceres Susana de los Angeles",
+   "celular": "0939176038"
+  },
+  "6CV": {
+   "nombre": "Cordova Brito Ximena Alexandra",
+   "celular": "0969581859"
+  },
+  "7AV": {
+   "nombre": "Cordova Brito Marianita Cumanda",
+   "celular": "0987616529"
+  },
+  "7BV": {
+   "nombre": "Garcia Toala Joseling Solange",
+   "celular": "0988856053"
+  },
+  "7CV": {
+   "nombre": "Guachamin Luje Karina Alexandra",
+   "celular": "0981090551"
+  }
+ }
+}

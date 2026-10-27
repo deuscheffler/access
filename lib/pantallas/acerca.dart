@@ -77,6 +77,19 @@ class PaginaAcerca extends StatelessWidget {
                         style: const TextStyle(
                             fontSize: 13, color: Paleta.pizarra),
                       ),
+                      if (a.escuelaDireccion.isNotEmpty ||
+                          a.escuelaTelefono.isNotEmpty)
+                        Text(
+                          [
+                            if (a.escuelaDireccion.isNotEmpty)
+                              a.escuelaDireccion,
+                            if (a.escuelaTelefono.isNotEmpty)
+                              'Tel. ${a.escuelaTelefono}',
+                            if (a.escuelaCorreo.isNotEmpty) a.escuelaCorreo,
+                          ].join(', '),
+                          style: const TextStyle(
+                              fontSize: 13, color: Paleta.pizarra),
+                        ),
                     ],
                   ),
                 ),

@@ -41,6 +41,12 @@ class _PaginaEnvioGrupoState extends State<PaginaEnvioGrupo> {
       final partes = guardado.split('|');
       _telefono.text = partes.first;
       _nombre.text = partes.length > 1 ? partes[1] : '';
+    } else if (_sel.length == 1) {
+      final d = Almacen.i.docenteDe(_sel.first);
+      if (d != null) {
+        _telefono.text = d.celular;
+        _nombre.text = d.nombre;
+      }
     }
   }
 

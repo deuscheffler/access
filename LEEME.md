@@ -31,6 +31,16 @@ necesite.
   imágenes por envío; si el grupo tiene más, la app los separa por paralelo.
   También se pueden descargar todas en un ZIP, o sacar un PDF solo para
   imprimir (no debe enviarse a las familias porque contiene todo el grupo).
+- **Enviar a docentes:** usa la lista oficial de docentes (`assets/docentes.json`).
+  Con «Enviar a los pendientes», la app prepara las imágenes de cada paralelo y
+  abre WhatsApp en el chat de su docente con todo adjunto; tú solo tocas
+  Enviar y vuelves a la app, que continúa con el siguiente. Marca cada
+  paralelo enviado. Si cambia un docente, toca su fila para editarlo.
+- **Autorizar sin QR:** si alguien no trae su pase, busca al estudiante por
+  nombre o curso, verifica su identidad y autoriza el ingreso. El pase queda
+  usado. Desde ahí también se habilita de nuevo un pase usado.
+- **Reingreso:** si un pase sale en rojo como «ya utilizado» porque la persona
+  salió y vuelve, la pantalla roja tiene el botón «permitir reingreso».
 - **Agregar acceso:** para un estudiante que no está en la nómina, una
   autoridad o un invitado. También desde los pases de un estudiante se puede
   agregar un pase más. El nombre viaja dentro del QR, así que todas las
@@ -82,6 +92,12 @@ distintas, ambas lo aceptarían. Para evitarlo, en el escáner toca
 4. Descarga `omega-access-demo` en **Artifacts** e instala el APK.
 
 Si el proceso termina en rojo, copia el error del paso que falló y compártelo.
+
+## Actualizar la lista de docentes
+
+```
+python tool/convertir_docentes.py DATOS_PARA_APLICACION_QR.xlsx
+```
 
 ## Actualizar la nómina
 

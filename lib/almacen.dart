@@ -45,6 +45,17 @@ class Almacen extends ChangeNotifier {
 
   bool _precargaHecha = false;
 
+  /// Docente de cada paralelo (assets/docentes.json).
+  final Map<String, Docente> _docentes = {};
+
+  /// Datos de contacto de la institución.
+  String escuelaDireccion = '';
+  String escuelaTelefono = '';
+  String escuelaCorreo = '';
+
+  /// Envíos a docentes ya hechos: "evento|curso" -> fecha.
+  final Map<String, DateTime> enviados = {};
+
   File? _archivo;
   Future<void> _escritura = Future.value();
 
@@ -70,6 +81,22 @@ class Almacen extends ChangeNotifier {
     }
     _cursos = vistos.values.toList()..sort(compararCursos);
 
+    try {
+      final d = jsonDecode(await rootBundle.loadString('assets/docentes.json'))
+          as Map<String, dynamic>;
+      final esc = (d['escuela'] ?? const <String, dynamic>{})
+          as Map<String, dynamic>;
+      escuelaDireccion = (esc['direccion'] ?? '') as String;
+      escuelaTelefono = (esc['telefono'] ?? '') as String;
+      escuelaCorreo = (esc['correo'] ?? '') as String;
+      (d['docentes'] as Map<String, dynamic>).forEach((k, v) {
+        final m = v as Map<String, dynamic>;
+        _docentes[k] = Docente(m['nombre'] as String, m['celular'] as String);
+      });
+    } catch (_) {
+      // Sin lista de docentes: el envío se hace escribiendo el número.
+    }
+
     final dir = await getApplicationDocumentsDirectory();
     _archivo = File('${dir.path}/omega_access_v2.json');
     final archivo = _archivo!;
@@ -94,6 +121,8 @@ class Almacen extends ChangeNotifier {
         ((j['contactos'] ?? const <String, dynamic>{}) as Map<String, dynamic>)
             .forEach((k, v) => contactos[k] = v as String);
         _precargaHecha = (j['precarga1'] ?? false) as bool;
+        ((j['enviados'] ?? const <String, dynamic>{}) as Map<String, dynamic>)
+            .forEach((k, v) => enviados[k] = DateTime.parse(v as String));
       } catch (_) {
         eventos.clear();
         usos.clear();
@@ -173,6 +202,7 @@ class Almacen extends ChangeNotifier {
       'celular': nombreCelular,
       'contactos': contactos,
       'precarga1': _precargaHecha,
+      'enviados': enviados.map((k, v) => MapEntry(k, v.toIso8601String())),
     });
     _escritura = _escritura.then((_) => archivo.writeAsString(contenido));
   }
@@ -344,7 +374,113 @@ class Almacen extends ChangeNotifier {
     _cambio();
   }
 
+  /// Docente de un paralelo: el contacto editado en este celular o, si no
+  /// hay, el de la lista oficial.
+  Docente? docenteDe(String claveCurso) {
+    final propio = contactos[claveCurso];
+    if (propio != null && propio.isNotEmpty) {
+      final partes = propio.split('|');
+      return Docente(partes.length > 1 ? partes[1] : '', partes.first);
+    }
+    return _docentes[claveCurso];
+  }
+
+  DateTime? enviadoA(Evento ev, String claveCurso) =>
+      enviados['${ev.id}|$claveCurso'];
+
+  void marcarEnviado(Evento ev, String claveCurso, {bool enviado = true}) {
+    if (enviado) {
+      enviados['${ev.id}|$claveCurso'] = DateTime.now();
+    } else {
+      enviados.remove('${ev.id}|$claveCurso');
+    }
+    _cambio();
+  }
+
+  // ---------- Autorización manual y reingresos ----------
+
+  Escaneo _registrar(
+    Evento ev,
+    Veredicto v,
+    String titulo,
+    String? persona,
+    String detalle, {
+    String? estudianteId,
+    String? curso,
+    int? numero,
+    String? clave,
+  }) {
+    final e = Escaneo(
+      id: nuevoId(),
+      eventoId: ev.id,
+      fecha: DateTime.now(),
+      veredicto: v,
+      titulo: titulo,
+      persona: persona,
+      detalle: detalle,
+      estudianteId: estudianteId,
+      curso: curso,
+      numero: numero,
+      puerta: nombreCelular,
+      clavePase: clave,
+    );
+    escaneos.insert(0, e);
+    _cambio();
+    return e;
+  }
+
+  DateTime? usoPorClave(Evento ev, String clave) => usos[ev.id]?[clave];
+
+  /// Registra el ingreso de alguien que no presentó su QR, después de que el
+  /// personal verificó de qué estudiante viene.
+  Escaneo autorizarSinQr(
+    Evento ev, {
+    required String clave,
+    required String persona,
+    required String curso,
+    required int numero,
+    required int total,
+    String? estudianteId,
+  }) {
+    usos.putIfAbsent(ev.id, () => {})[clave] = DateTime.now();
+    return _registrar(ev, Veredicto.valido, 'Ingreso autorizado sin QR',
+        persona, '$curso, pase $numero de $total. Verificado por el personal.',
+        estudianteId: estudianteId, curso: curso, numero: numero, clave: clave);
+  }
+
+  /// Deja un pase usado disponible otra vez, para que su dueño pueda salir
+  /// y volver a entrar con el mismo código.
+  Escaneo habilitarDeNuevo(
+    Evento ev, {
+    required String clave,
+    required String persona,
+    required String curso,
+    required int numero,
+    required int total,
+    String? estudianteId,
+  }) {
+    usos[ev.id]?.remove(clave);
+    return _registrar(ev, Veredicto.habilitado, 'Pase habilitado de nuevo',
+        persona, '$curso, pase $numero de $total. Puede volver a ingresar '
+        'con el mismo código.',
+        estudianteId: estudianteId, curso: curso, numero: numero, clave: clave);
+  }
+
+  /// Desde la pantalla roja de «Pase ya utilizado»: deja pasar otra vez.
+  Escaneo autorizarReingreso(Evento ev, Escaneo rechazo) {
+    final clave = rechazo.clavePase!;
+    usos.putIfAbsent(ev.id, () => {})[clave] = DateTime.now();
+    return _registrar(ev, Veredicto.valido, 'Reingreso autorizado',
+        rechazo.persona, rechazo.detalle.replaceFirst(
+            RegExp(r'^Ingresó a las \d\d:\d\d\. '), ''),
+        estudianteId: rechazo.estudianteId,
+        curso: rechazo.curso,
+        numero: rechazo.numero,
+        clave: clave);
+  }
+
   void borrarDatosDelCelular() {
+    enviados.clear();
     eventos.clear();
     usos.clear();
     puertas.clear();
@@ -365,6 +501,7 @@ class Almacen extends ChangeNotifier {
       Estudiante? est,
       String? curso,
       int? n,
+      String? clave,
     }) =>
         Escaneo(
           id: nuevoId(),
@@ -378,6 +515,7 @@ class Almacen extends ChangeNotifier {
           curso: curso ?? est?.curso,
           numero: n,
           puerta: nombreCelular,
+          clavePase: clave,
         );
 
     final r = pareceExtra(texto)
@@ -419,12 +557,13 @@ class Almacen extends ChangeNotifier {
     if (previo != null) {
       return crear(Veredicto.rechazado, 'Pase ya utilizado', l.nombre,
           'Ingresó a las ${hora(previo)}. $detalle',
-          curso: l.detalle, n: l.numero);
+          curso: l.detalle, n: l.numero, clave: clave);
     }
     mapa[clave] = DateTime.now();
     return crear(Veredicto.valido, 'Acceso registrado', l.nombre, detalle,
         curso: l.detalle.isEmpty ? 'Acceso adicional' : l.detalle,
-        n: l.numero);
+        n: l.numero,
+        clave: clave);
   }
 
   Escaneo _evaluar(String texto, Evento evento, _Crear crear) {
@@ -487,11 +626,11 @@ class Almacen extends ChangeNotifier {
     if (previo != null) {
       return crear(Veredicto.rechazado, 'Pase ya utilizado', persona,
           'Ingresó a las ${hora(previo)}. $descripcion',
-          est: est, n: n);
+          est: est, n: n, clave: clave);
     }
     mapa[clave] = DateTime.now();
     return crear(Veredicto.valido, 'Acceso registrado', persona, descripcion,
-        est: est, n: n);
+        est: est, n: n, clave: clave);
   }
 }
 
@@ -503,4 +642,5 @@ typedef _Crear = Escaneo Function(
   Estudiante? est,
   String? curso,
   int? n,
+  String? clave,
 });

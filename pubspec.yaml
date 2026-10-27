@@ -1,7 +1,7 @@
 name: omega_access
 description: Omega Access Control, versión sin conexión con nómina incluida.
 publish_to: 'none'
-version: 1.1.0+4
+version: 1.2.1+6
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
@@ -24,6 +24,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/nomina.json
+    - assets/docentes.json
     - assets/img/
     - assets/fonts/
   fonts:

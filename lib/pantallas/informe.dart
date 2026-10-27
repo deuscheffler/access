@@ -123,6 +123,7 @@ Future<void> compartirCsv(Evento ev) async {
         Veredicto.valido => 'Ingreso',
         Veredicto.rechazado => 'Rechazado',
         Veredicto.advertencia => 'Verificar',
+        Veredicto.habilitado => 'Pase habilitado',
       },
       e.titulo,
       e.persona ?? '',
@@ -157,6 +158,12 @@ Future<void> compartirInformePdf(Evento ev) async {
       lecturas.where((e) => e.veredicto == Veredicto.rechazado).length;
   final avisos =
       lecturas.where((e) => e.veredicto == Veredicto.advertencia).toList();
+  final sinQr =
+      ingresos.where((e) => e.titulo == 'Ingreso autorizado sin QR').length;
+  final reingresos = ingresos
+          .where((e) => e.titulo == 'Reingreso autorizado')
+          .length +
+      lecturas.where((e) => e.veredicto == Veredicto.habilitado).length;
   final totalPases = a.totalPases(ev);
   final cursos = a.cursosDeEvento(ev);
   final extras = a.extrasDe(ev);
@@ -268,6 +275,16 @@ Future<void> compartirInformePdf(Evento ev) async {
                 const PdfColor.fromInt(0xFFE39B12)),
           ],
         ),
+        if (sinQr > 0 || reingresos > 0)
+          pw.Padding(
+            padding: const pw.EdgeInsets.only(top: 8),
+            child: pw.Text(
+              'Incluye $sinQr ingresos autorizados sin QR y $reingresos '
+              'reingresos o pases habilitados de nuevo, verificados por el '
+              'personal.',
+              style: t(9, color: pdfPizarra),
+            ),
+          ),
         pw.SizedBox(height: 18),
         pw.Text('Ingresos por curso', style: t(13, negrita: true, color: pdfTinta)),
         pw.SizedBox(height: 6),
@@ -317,7 +334,7 @@ Future<void> compartirInformePdf(Evento ev) async {
           pw.Text('Sin ingresos registrados en este celular.', style: t(10))
         else
           pw.TableHelper.fromTextArray(
-            headers: ['Hora', 'Invitado de', 'Curso', 'Pase'],
+            headers: ['Hora', 'Invitado de', 'Curso', 'Pase', 'Tipo'],
             data: [
               for (final e in ingresos)
                 [
@@ -325,6 +342,11 @@ Future<void> compartirInformePdf(Evento ev) async {
                   (e.persona ?? '').replaceFirst('Invitado de ', ''),
                   e.curso ?? '',
                   e.numero?.toString() ?? '',
+                  switch (e.titulo) {
+                    'Ingreso autorizado sin QR' => 'Sin QR',
+                    'Reingreso autorizado' => 'Reingreso',
+                    _ => 'QR',
+                  },
                 ],
             ],
             headerStyle: t(9, negrita: true, color: PdfColors.white),
@@ -339,11 +361,12 @@ Future<void> compartirInformePdf(Evento ev) async {
               1: const pw.FlexColumnWidth(3),
               2: const pw.FlexColumnWidth(2),
               3: const pw.FixedColumnWidth(32),
+              4: const pw.FixedColumnWidth(52),
             },
           ),
         if (lecturas.any((e) => e.veredicto != Veredicto.valido)) ...[
           pw.SizedBox(height: 18),
-          pw.Text('Lecturas rechazadas o por verificar',
+          pw.Text('Lecturas rechazadas, por verificar y pases habilitados',
               style: t(13, negrita: true, color: pdfTinta)),
           pw.SizedBox(height: 6),
           pw.TableHelper.fromTextArray(

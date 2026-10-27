@@ -114,7 +114,8 @@ class Pase {
   String get clave => '$estudianteId.$numero';
 }
 
-enum Veredicto { valido, rechazado, advertencia }
+/// habilitado: un pase usado vuelve a quedar disponible (reingreso).
+enum Veredicto { valido, rechazado, advertencia, habilitado }
 
 /// Acceso adicional: estudiante que no está en la nómina, invitado especial
 /// o un pase extra para un estudiante. Sus datos viajan dentro del QR, así
@@ -178,6 +179,7 @@ class Escaneo {
   final String? curso;
   final int? numero;
   final String puerta;
+  final String? clavePase;
 
   Escaneo({
     required this.id,
@@ -191,6 +193,7 @@ class Escaneo {
     this.curso,
     this.numero,
     this.puerta = '',
+    this.clavePase,
   });
 
   Map<String, dynamic> toJson() => {
@@ -205,6 +208,7 @@ class Escaneo {
         'curso': curso,
         'num': numero,
         'puerta': puerta,
+        'cp': clavePase,
       };
 
   factory Escaneo.fromJson(Map<String, dynamic> j) => Escaneo(
@@ -219,5 +223,13 @@ class Escaneo {
         curso: j['curso'] as String?,
         numero: j['num'] as int?,
         puerta: (j['puerta'] ?? '') as String,
+        clavePase: j['cp'] as String?,
       );
+}
+
+/// Docente responsable de un paralelo.
+class Docente {
+  final String nombre;
+  final String celular;
+  const Docente(this.nombre, this.celular);
 }
